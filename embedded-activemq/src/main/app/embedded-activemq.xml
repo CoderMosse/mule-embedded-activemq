@@ -1,0 +1,37 @@
+<mule xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    
+    <context:property-placeholder location="${mule.env}.properties"/>
+    
+    <jms:activemq-connector name="amq-connector" brokerURL="vm://localhost?brokerConfig=xbean:activemq/activemq.xml" persistentDelivery="true" doc:name="Active MQ"/>
+    
+    <http:connector name="http-connector" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS">
+    	<service-overrides sessionHandler="org.mule.session.NullSessionHandler"/>
+    </http:connector>
+    
+    <flow name="activemq-console-proxy-flow" doc:name="activemq-console-proxy-flow" processingStrategy="synchronous">
+        <http:inbound-endpoint exchange-pattern="request-response"   doc:name="HTTP" connector-ref="http-connector" address="${activemq.console.proxy.address}"/>
+        <set-property propertyName="http.disable.status.code.exception.check" value="true" doc:name="Disable Exception Check"/>
+        <flow-ref name="copy-http-headers-flow" doc:name="Copy HTTP Headers"/>
+        <http:outbound-endpoint exchange-pattern="request-response" method="POST" doc:name="Send Requests To Console" address="http://localhost:${activemq.jetty.port}#[message.inboundProperties['http.request']]" connector-ref="http-connector"/>
+        <flow-ref name="copy-http-headers-flow" doc:name="Copy HTTP Headers"/>
+    </flow>
+    
+    <sub-flow name="copy-http-headers-flow" doc:name="copy-http-headers-flow">
+        <copy-properties propertyName="*" doc:name="Copy Properties"/>
+        <remove-property propertyName="Content-Length" doc:name="Remove Content Length"/>
+        <remove-property propertyName="MULE_*" doc:name="Remove MULE Properties"/>
+        <remove-property propertyName="X_MULE*" doc:name="Remove X_MULE Properties"/>
+        <remove-property propertyName="X-MULE*" doc:name="Remove X-MULE Properties"/>
+    </sub-flow>
+     
+</mule>
