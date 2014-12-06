@@ -152,7 +152,7 @@
     <bean id="contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection">
     </bean>
     
-    <bean id="ipAccess" class="org.eclipse.jetty.server.handler.IPAccessHandler">
+    <bean id="ipAccess" class="org.eclipse.jetty.server.handler.RealIPAccessHandler">
     	<property name="white">
     		<!--
     		<list>
