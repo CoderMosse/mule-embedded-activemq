@@ -25,7 +25,7 @@
         <!-- <property name="config" value="${activemq.home}/jetty-realm.properties" /> -->
         <property name="config">
         	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-                <property name="targetObject"><bean class="com.mulesoft.messaging.PathExtractor" /></property>
+                <property name="targetObject"><bean class="com.mulesoft.messaging.util.PathExtractor" /></property>
                 <property name="targetMethod"><value>getAbsolutePath</value></property>
                 <property name="arguments">
                     <list>
@@ -76,7 +76,7 @@
                             <!-- <property name="resourceBase" value="${activemq.home}/webapps/admin" /> -->
                             <property name="resourceBase">
                                 <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-                                    <property name="targetObject"><bean class="com.mulesoft.messaging.PathExtractor" /></property>
+                                    <property name="targetObject"><bean class="com.mulesoft.messaging.util.PathExtractor" /></property>
                                     <property name="targetMethod"><value>getAbsolutePath</value></property>
                                     <property name="arguments">
                                         <list>
@@ -92,7 +92,7 @@
                             <!-- <property name="resourceBase" value="${activemq.home}/webapps/fileserver" /> -->
                             <property name="resourceBase">
                                 <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-                                    <property name="targetObject"><bean class="com.mulesoft.messaging.PathExtractor" /></property>
+                                    <property name="targetObject"><bean class="com.mulesoft.messaging.util.PathExtractor" /></property>
                                     <property name="targetMethod"><value>getAbsolutePath</value></property>
                                     <property name="arguments">
                                         <list>
@@ -109,7 +109,7 @@
                             <!-- <property name="resourceBase" value="${activemq.home}/webapps/api" /> -->
                             <property name="resourceBase">
                                 <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-                                    <property name="targetObject"><bean class="com.mulesoft.messaging.PathExtractor" /></property>
+                                    <property name="targetObject"><bean class="com.mulesoft.messaging.util.PathExtractor" /></property>
                                     <property name="targetMethod"><value>getAbsolutePath</value></property>
                                     <property name="arguments">
                                         <list>
@@ -130,7 +130,7 @@
                             <!-- <property name="resourceBase" value="${activemq.home}/webapps/" /> -->
                             <property name="resourceBase">
                                 <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-                                    <property name="targetObject"><bean class="com.mulesoft.messaging.PathExtractor" /></property>
+                                    <property name="targetObject"><bean class="com.mulesoft.messaging.util.PathExtractor" /></property>
                                     <property name="targetMethod"><value>getAbsolutePath</value></property>
                                     <property name="arguments">
                                         <list>
@@ -151,10 +151,31 @@
 
     <bean id="contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection">
     </bean>
+    
+    <bean id="ipAccess" class="org.eclipse.jetty.server.handler.IPAccessHandler">
+    	<property name="white">
+    		<!--
+    		<list>
+    			<value>127.0.0.1</value>    			
+    		</list>
+    		-->
+    		<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+                <property name="targetObject"><bean class="com.mulesoft.messaging.util.IPListSplitter" /></property>
+                <property name="targetMethod"><value>getList</value></property>
+                <property name="arguments">
+                    <list>
+                        <!-- <value>${activemq.console.ip.whitelist}</value> -->
+                        <value>#{systemProperties['activemq.console.ip.whitelist']}</value>
+                    </list>
+                </property>
+            </bean>
+    	</property>
+    	<property name="handler" ref="contexts" />
+    </bean>
 
     <bean id="jettyPort" class="org.apache.activemq.web.WebConsolePort" init-method="start">
              <!-- the default port number for the web console -->
-        <property name="port" value="${activemq.jetty.port}"/>
+        <property name="port" value="${activemq.console.port}"/>
     </bean>
 
     <bean id="Server" depends-on="jettyPort" class="org.eclipse.jetty.server.Server" init-method="start"
@@ -183,7 +204,8 @@
             <bean id="handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
                 <property name="handlers">
                     <list>
-                        <ref bean="contexts" />
+                        <!-- <ref bean="contexts" /> -->
+                        <ref bean="ipAccess" />
                         <ref bean="securityHandler" />
                     </list>
                 </property>

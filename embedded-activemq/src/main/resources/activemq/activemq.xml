@@ -68,7 +68,7 @@
         
         <!--
         	Remove comments and configure the appropriate URI
-        	to activate the bridge to the tracking embedded broker.
+        	to activate the bridge.
         -->
         <!--
         <networkConnectors>
@@ -113,15 +113,12 @@
             clients and other brokers. For more information, see:
 
             http://activemq.apache.org/configuring-transports.html
-            
-            Remove comments if this is the configuration
-            for the tracking embedded broker.
         -->
         <transportConnectors>
             <transportConnector name="openwire" uri="tcp://0.0.0.0:${activemq.broker.port}?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
         </transportConnectors>
 
-        <!-- destroy the spring context on shutdown to stop jetty -->
+        <!-- Destroy the spring context on shutdown to stop jetty -->
         <shutdownHooks>
             <bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.activemq.hooks.SpringContextHook" />
         </shutdownHooks>

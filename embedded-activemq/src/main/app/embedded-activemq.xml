@@ -10,19 +10,20 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
     
-    <context:property-placeholder location="${mule.env}.properties"/>
+    <!-- <context:property-placeholder location="${mule.env}.properties"/> -->
     
-    <jms:activemq-connector name="amq-connector" brokerURL="vm://localhost?brokerConfig=xbean:activemq/activemq.xml" persistentDelivery="true" doc:name="Active MQ"/>
+    <jms:activemq-connector name="amq-connector" brokerURL="vm://localhost?brokerConfig=xbean:activemq/activemq.xml"  doc:name="Active MQ"/>
     
-    <http:connector name="http-connector" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS">
+    <!--
+    <http:connector name="http-connector" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS">
     	<service-overrides sessionHandler="org.mule.session.NullSessionHandler"/>
     </http:connector>
     
     <flow name="activemq-console-proxy-flow" doc:name="activemq-console-proxy-flow" processingStrategy="synchronous">
-        <http:inbound-endpoint exchange-pattern="request-response"   doc:name="HTTP" connector-ref="http-connector" address="${activemq.console.proxy.address}"/>
-        <set-property propertyName="http.disable.status.code.exception.check" value="true" doc:name="Disable Exception Check"/>
+        <http:inbound-endpoint exchange-pattern="request-response" doc:name="HTTP" connector-ref="http-connector" address="${activemq.console.proxy.address}"/>
+        <flow-ref name="set-http-headers-flow" doc:name="Set HTTP Headers"/>
         <flow-ref name="copy-http-headers-flow" doc:name="Copy HTTP Headers"/>
-        <http:outbound-endpoint exchange-pattern="request-response" method="POST" doc:name="Send Requests To Console" address="http://localhost:${activemq.jetty.port}#[message.inboundProperties['http.request']]" connector-ref="http-connector"/>
+        <http:outbound-endpoint exchange-pattern="request-response" doc:name="Send Requests To Console" address="http://localhost:${activemq.jetty.port}#[message.inboundProperties['http.request']]" connector-ref="http-connector"  method="POST"  />
         <flow-ref name="copy-http-headers-flow" doc:name="Copy HTTP Headers"/>
     </flow>
     
@@ -33,5 +34,12 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
         <remove-property propertyName="X_MULE*" doc:name="Remove X_MULE Properties"/>
         <remove-property propertyName="X-MULE*" doc:name="Remove X-MULE Properties"/>
     </sub-flow>
+    <sub-flow name="set-http-headers-flow" doc:name="set-http-headers-flow">
+        <set-property propertyName="http.disable.status.code.exception.check" value="true" doc:name="Disable Exception Check"/>
+        <set-property propertyName="X-Forwarded-For" value="#[message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS'].substring(1).split(':')[0]]" doc:name="Set X-Forwarded-For"/>
+        <set-property propertyName="X-Forwarded-By" value="#[message.inboundProperties['MULE_REMOTE_CLIENT_ADDRESS'].substring(1)]" doc:name="Set X-Forwarded-By"/>
+        <set-property propertyName="X-Forwarded-Proto" value="http" doc:name="Set X-Forwarded-Proto"/>
+    </sub-flow>
+    -->
      
 </mule>

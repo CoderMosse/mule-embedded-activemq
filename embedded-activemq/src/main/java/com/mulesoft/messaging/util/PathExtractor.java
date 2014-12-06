@@ -1,4 +1,4 @@
-package com.mulesoft.messaging;
+package com.mulesoft.messaging.util;
 
 import java.io.IOException;
 
