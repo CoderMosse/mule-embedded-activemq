@@ -12,7 +12,9 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
     
     <!-- <context:property-placeholder location="${mule.env}.properties"/> -->
     
-    <jms:activemq-connector name="amq-connector" brokerURL="vm://localhost?brokerConfig=xbean:activemq/activemq.xml"  doc:name="Active MQ"/>
+    <jms:activemq-connector name="amq-connector" brokerURL="vm://localhost?brokerConfig=xbean:activemq/activemq.xml"  doc:name="Active MQ" validateConnections="true">
+        <reconnect-forever frequency="20000" blocking="${activemq.cluster.enabled}"/>
+    </jms:activemq-connector>
     
     <!--
     <http:connector name="http-connector" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS">
